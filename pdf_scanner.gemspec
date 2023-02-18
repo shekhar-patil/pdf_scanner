@@ -5,8 +5,8 @@ require_relative "lib/pdf_scanner/version"
 Gem::Specification.new do |spec|
   spec.name          = "pdf_scanner"
   spec.version       = PdfScanner::VERSION
-  spec.authors       = ["Shekhar Patil"]
-  spec.email         = ["shekhar@cardup.co"]
+  spec.authors       = ["shekhar-patil"]
+  spec.email         = ["patilshekhar900@gmail.com"]
 
   spec.summary       = "Write a short summary, because RubyGems requires one."
   spec.description   = "Write a longer description or delete this line."
