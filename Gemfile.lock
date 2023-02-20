@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pdf_scanner (0.1.0)
+    pdf_scanner (0.1.1)
       origami (~> 2.1.0)
 
 GEM
