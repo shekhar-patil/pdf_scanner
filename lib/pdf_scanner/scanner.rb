@@ -4,7 +4,6 @@ require 'rexml/document'
 require 'digest/sha2'
 require 'fileutils'
 require 'origami'
-# require 'colorize'
 
 module PdfScanner
   class Scanner
@@ -29,11 +28,12 @@ module PdfScanner
       @options[:policy] = params[:policy] if params[:policy].present?
       @options[:move_dir] = params[:dir] if params[:dir].present?
       @options[:password] = params[:passwd] if params[:passwd].present? # for encrypted file
-      @errors = []
+      @errors = { rejected_policies: [], analysis_failure: [] }
     end
 
     def scan
       begin
+        @errors = { rejected_policies: [], analysis_failure: [] }
         if !@options.key?(:policy)
           @options[:policy] = DEFAULT_POLICY
         end
@@ -138,8 +138,8 @@ module PdfScanner
             end
           end
         end
-      rescue
-        reject("Analysis failure")
+      rescue StandardError => ex
+        reject("Analysis failure", ex)
       end
 
       @errors
@@ -149,12 +149,16 @@ module PdfScanner
       SECURITY_POLICIES.update(Hash.new(false).update YAML.load(File.read(path)))
     end
 
-    def reject(cause)
+    def reject(cause, exception_message = nil)
       if @options.key?(:move_dir)
         quarantine(@options[:target_file], @options[:move_dir])
       end
 
-      @errors << "Document rejected by policy `#{@options[:policy]}', caused by #{cause.inspect}."
+      if exception_message.nil?
+        @errors[:rejected_policies] << { policy: @options[:policy], message: cause.inspect }
+      else
+        @errors[:analysis_failure] << { error: exception_message.to_s, message: cause.inspect }
+      end
     end
 
     def quarantine(file, quarantine_folder)
