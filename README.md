@@ -1,8 +1,14 @@
 # PdfScanner
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/pdf_scanner`. To experiment with that code, run `bin/console` for an interactive prompt.
+PdfScanner is a Ruby gem for scanning PDF files for potentially dangerous or unwanted features, such as JavaScript, embedded files, forms, and more. It uses configurable security policies to analyze PDF files and can quarantine files that violate your policies.
 
-TODO: Delete this and the text above, and describe your gem
+## Features
+
+- Scans PDF files for scripts, attachments, forms, and other risky features
+- Configurable security policies via YAML
+- Supports encrypted PDFs (with password)
+- Can quarantine files that violate policies
+- Extensible and easy to integrate
 
 ## Installation
 
@@ -14,30 +20,116 @@ gem 'pdf_scanner'
 
 And then execute:
 
-    $ bundle install
+```sh
+bundle install
+```
 
 Or install it yourself as:
 
-    $ gem install pdf_scanner
+```sh
+gem install pdf_scanner
+```
 
 ## Usage
 
-TODO: Write usage instructions here
+### Basic Example
+
+```ruby
+require 'pdf_scanner'
+
+scanner = PdfScanner::Scanner.new(
+  target_file: '/path/to/file.pdf',
+  config_file: '/path/to/pdfcop.conf.yml', # optional, uses default if omitted
+  policy: 'standard',                      # optional, uses 'standard' if omitted
+  dir: '/path/to/quarantine',              # optional, for quarantining
+  passwd: 'password'                       # optional, for encrypted PDFs
+)
+result = scanner.scan
+
+puts result.inspect
+```
+
+### Parameters
+
+- `target_file` (required): Path to the PDF file to scan.
+- `config_file` (optional): Path to the YAML config file with security policies.
+- `policy` (optional): Policy name to use (default: `standard`).
+- `dir` (optional): Directory to move/quarantine files that violate policies.
+- `passwd` (optional): Password for encrypted PDFs.
+
+### Return Value
+
+The `scan` method returns a hash with two keys:
+- `:rejected_policies` — Array of hashes with `:policy` and `:message` for each rejected policy.
+- `:analysis_failure` — Array of hashes with `:error` and `:message` for analysis failures.
+
+Example:
+
+```ruby
+{
+  rejected_policies: [
+    { policy: "standard", message: "[:allowJS]" }
+  ],
+  analysis_failure: []
+}
+```
+
+## Configuration
+
+Policies are defined in a YAML file (see `lib/pdf_scanner/config/pdfcop.conf.yml` for an example). Each policy is a set of boolean flags controlling which PDF features are allowed.
+
+Example policy section:
+
+```yaml
+POLICY_STANDARD:
+  allowParserErrors: false
+  allowAttachments: false
+  allowEncryption: false
+  allowJS: false
+  allowAcroForms: false
+  # ... more options ...
+```
+
+## Command-Line Usage
+
+You can also use the provided `bin/console` for interactive testing:
+
+```sh
+bin/console
+```
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run:
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```sh
+bin/setup
+```
+
+To install dependencies. You can also run:
+
+```sh
+bin/console
+```
+
+For an interactive prompt.
+
+To install this gem onto your local machine:
+
+```sh
+bundle exec rake install
+```
+
+To release a new version, update the version number in `version.rb`, then run:
+
+```sh
+bundle exec rake release
+```
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/pdf_scanner. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/pdf_scanner/blob/master/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/shekhar-patil/pdf_scanner. Please adhere to the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the PdfScanner project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/pdf_scanner/blob/master/CODE_OF_CONDUCT.md).
+The gem is available as open source under the terms of the [MIT License](LICENSE.txt).
